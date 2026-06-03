@@ -5,7 +5,7 @@ pub struct Metrics(Map[String, Double])
 
 /// Get a metric value, defaulting to 0.0 if not found
 pub fn Metrics::get(self : Metrics, key : String) -> Double {
-  match self.inner().get(key) {
+  match self.0.get(key) {
     Some(v) => v
     None => 0.0
   }
@@ -13,7 +13,7 @@ pub fn Metrics::get(self : Metrics, key : String) -> Double {
 
 /// Set a metric value
 pub fn Metrics::set(self : Metrics, key : String, value : Double) -> Unit {
-  self.inner().set(key, value)
+  self.0.set(key, value)
 }
 
 /// Create empty metrics
@@ -23,7 +23,7 @@ pub fn Metrics::new() -> Metrics {
 
 /// Iterate over all metric entries
 pub fn Metrics::each(self : Metrics, f : (String, Double) -> Unit) -> Unit {
-  self.inner().each(f)
+  self.0.each(f)
 }
 
 /// Average multiple metrics maps (per-key averaging)
