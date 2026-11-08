@@ -1,7 +1,8 @@
 // Performance benchmark: CMA-ES scaling by dimension
 // Measures per-dimension wall-clock time using platform-specific clock
 
-fn sphere(params : Array[Double], _seed : Int) -> @dec.Metrics {
+///|
+fn sphere(params : Array[Double], _seed : Int32) -> @dec.Metrics {
   let mut sum = 0.0
   for x in params {
     sum = sum + x * x
@@ -11,18 +12,25 @@ fn sphere(params : Array[Double], _seed : Int) -> @dec.Metrics {
   m
 }
 
-fn make_specs(n : Int) -> Array[@dec.ParamSpec] {
+///|
+fn make_specs(n : Int32) -> Array[@dec.ParamSpec] {
   let specs : Array[@dec.ParamSpec] = []
   for i = 0; i < n; i = i + 1 {
-    specs.push({ name: "x" + i.to_string(), initial: 3.0, min: -5.12, max: 5.12 })
+    specs.push({
+      name: "x" + i.to_string(),
+      initial: 3.0,
+      min: -5.12,
+      max: 5.12,
+    })
   }
   specs
 }
 
-fn run_timed(n : Int, gens : Int) -> Unit {
+///|
+fn run_timed(n : Int32, gens : Int32) -> Unit {
   let specs = make_specs(n)
   let targets : Array[@dec.BalanceTarget] = [
-    { metric: "value", target: 0.0, weight: 1.0 },
+    { metric: "value", target: 0.0, weight: 1.0, },
   ]
   let config = {
     ..@dec.TuneConfig::default(specs, targets),
@@ -36,7 +44,9 @@ fn run_timed(n : Int, gens : Int) -> Unit {
   let result = @dec.tune(config, sphere)
   let t1 = now_ms()
   let elapsed = t1 - t0
-  let loss_str = if result.loss < 1.0e-10 { "<1e-10" } else {
+  let loss_str = if result.loss < 1.0e-10 {
+    "<1e-10"
+  } else {
     let v = result.loss
     v.to_int().to_string()
   }
@@ -52,12 +62,24 @@ fn run_timed(n : Int, gens : Int) -> Unit {
   let time_str = pad_l(elapsed.to_string(), 8)
   let mpg = fmt2(ms_per_gen)
   println(
-    n_str + " | " + gens_str + " | " + pop_str + " | " +
-    eval_str + " | " + time_str + "ms | " + pad_l(mpg, 8) + "ms/gen | loss=" + loss_str,
+    n_str +
+    " | " +
+    gens_str +
+    " | " +
+    pop_str +
+    " | " +
+    eval_str +
+    " | " +
+    time_str +
+    "ms | " +
+    pad_l(mpg, 8) +
+    "ms/gen | loss=" +
+    loss_str,
   )
 }
 
-fn pad_l(s : String, w : Int) -> String {
+///|
+fn pad_l(s : String, w : Int32) -> String {
   let mut r = s
   while r.length() < w {
     r = " " + r
@@ -65,6 +87,7 @@ fn pad_l(s : String, w : Int) -> String {
   r
 }
 
+///|
 fn fmt2(v : Double) -> String {
   let sign = if v < 0.0 { "-" } else { "" }
   let abs_v = if v < 0.0 { -v } else { v }
@@ -74,13 +97,22 @@ fn fmt2(v : Double) -> String {
   sign + int_part.to_string() + "." + p
 }
 
+///|
 fn main {
-  println("╔══════════════════════════════════════════════════════════════════════╗")
-  println("║  CMA-ES Performance Scaling (Sphere, 1 seed)                        ║")
-  println("╚══════════════════════════════════════════════════════════════════════╝")
+  println(
+    "╔══════════════════════════════════════════════════════════════════════╗",
+  )
+  println(
+    "║  CMA-ES Performance Scaling (Sphere, 1 seed)                        ║",
+  )
+  println(
+    "╚══════════════════════════════════════════════════════════════════════╝",
+  )
   println("")
   println("    n |  gens |  pop |   evals |     time |   ms/gen | result")
-  println("  ─── | ──── | ─── | ────── | ─────── | ─────── | ──────")
+  println(
+    "  ─── | ──── | ─── | ────── | ─────── | ─────── | ──────",
+  )
   run_timed(5, 100)
   run_timed(10, 100)
   run_timed(20, 100)
@@ -90,7 +122,9 @@ fn main {
   run_timed(100, 100)
   println("")
   println("Complexity per generation:")
-  println("  Eigendecomp (Jacobi): O(n^2) rotations × O(n) updates = O(n^3) per rotation sweep")
+  println(
+    "  Eigendecomp (Jacobi): O(n^2) rotations × O(n) updates = O(n^3) per rotation sweep",
+  )
   println("                        max_iter = 100*n^2 → worst case O(n^5)")
   println("  Population sampling:  O(pop × n^2)")
   println("  Covariance update:    O(mu × n^2)")
@@ -100,5 +134,7 @@ fn main {
   println("  n<30:  Already fast. No acceleration needed.")
   println("  n>50:  Metal compute shaders for eigendecomp + population eval")
   println("  n>100: BLAS/Accelerate framework for matrix ops (Apple silicon)")
-  println("         Or: switch to Cholesky-based CMA-ES (avoids full eigendecomp)")
+  println(
+    "         Or: switch to Cholesky-based CMA-ES (avoids full eigendecomp)",
+  )
 }

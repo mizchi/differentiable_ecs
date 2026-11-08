@@ -2,6 +2,8 @@
 // macOS: links against Accelerate framework
 // Linux: links against liblapack + libblas
 
+#include <stdlib.h>
+
 #ifdef __APPLE__
 #define ACCELERATE_NEW_LAPACK
 #include <Accelerate/Accelerate.h>

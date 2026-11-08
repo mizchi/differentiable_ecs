@@ -1,9 +1,11 @@
 // Symmetric matrix eigendecomposition using Jacobi rotations
 // Input: n x n symmetric matrix (flat row-major Array[Double])
 // Output: (eigenvalues, eigenvectors as flat n*n row-major)
+
+///|
 pub fn eigen_symmetric(
   mat : Array[Double],
-  n : Int,
+  n : Int32,
 ) -> (Array[Double], Array[Double]) {
   let a = mat.copy()
   let v : Array[Double] = Array::make(n * n, 0.0)
@@ -48,8 +50,12 @@ pub fn eigen_symmetric(
         a[q * n + i] = a[i * n + q]
       }
     }
-    a[p * n + p] = cos_t * cos_t * app + 2.0 * sin_t * cos_t * apq + sin_t * sin_t * aqq
-    a[q * n + q] = sin_t * sin_t * app - 2.0 * sin_t * cos_t * apq + cos_t * cos_t * aqq
+    a[p * n + p] = cos_t * cos_t * app +
+      2.0 * sin_t * cos_t * apq +
+      sin_t * sin_t * aqq
+    a[q * n + q] = sin_t * sin_t * app -
+      2.0 * sin_t * cos_t * apq +
+      cos_t * cos_t * aqq
     a[p * n + q] = 0.0
     a[q * n + p] = 0.0
     for i = 0; i < n; i = i + 1 {

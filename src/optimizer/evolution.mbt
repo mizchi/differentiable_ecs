@@ -1,19 +1,21 @@
 // Simple (1+lambda)-ES fallback optimizer
 
+///|
 pub(all) struct EvolutionState {
-  n : Int
-  mut generation : Int
+  n : Int32
+  mut generation : Int32
   best : Array[Double]
   mut best_loss : Double
   scales : Array[Double]
   mut sigma : Double
-  mut rng_x : Int
+  mut rng_x : Int32
 }
 
+///|
 pub fn EvolutionState::new(
   initial : Array[Double],
   sigma : Double,
-  seed~ : Int = 42,
+  seed~ : Int32 = 42,
 ) -> EvolutionState {
   let n = initial.length()
   let scales : Array[Double] = []
@@ -31,6 +33,7 @@ pub fn EvolutionState::new(
   }
 }
 
+///|
 pub fn EvolutionState::sample(self : EvolutionState) -> Array[Double] {
   let candidate : Array[Double] = Array::make(self.n, 0.0)
   for i = 0; i < self.n; i = i + 1 {
@@ -41,9 +44,10 @@ pub fn EvolutionState::sample(self : EvolutionState) -> Array[Double] {
   candidate
 }
 
+///|
 pub fn EvolutionState::sample_population(
   self : EvolutionState,
-  pop_size : Int,
+  pop_size : Int32,
 ) -> Array[Array[Double]] {
   let pop : Array[Array[Double]] = []
   for _k = 0; _k < pop_size; _k = _k + 1 {
@@ -52,6 +56,7 @@ pub fn EvolutionState::sample_population(
   pop
 }
 
+///|
 pub fn EvolutionState::update(
   self : EvolutionState,
   candidate : Array[Double],

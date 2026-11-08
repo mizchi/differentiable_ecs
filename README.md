@@ -13,7 +13,7 @@ moon add mizchi/differentiable_ecs
 ## Quick Start
 
 ```moonbit
-fn simulate(params : Array[Double], seed : Int) -> @dec.Metrics {
+fn simulate(params : Array[Double], seed : Int32) -> @dec.Metrics {
   let speed = params[0]
   let hp = params[1]
   // ... run your simulation ...
@@ -41,7 +41,7 @@ fn main {
 ## How It Works
 
 1. **Define parameters** (`ParamSpec`): name, initial value, min/max bounds
-2. **Write a simulation function**: `(Array[Double], Int) -> Metrics` — takes parameter values and a seed, returns named metrics
+2. **Write a simulation function**: `(Array[Double], Int32) -> Metrics` — takes parameter values and a seed, returns named metrics
 3. **Set targets** (`BalanceTarget`): which metrics to optimize, target values, and weights
 4. **Call `tune()`**: CMA-ES finds parameters that minimize weighted squared error between actual and target metrics
 
@@ -142,6 +142,24 @@ The bottleneck is Jacobi eigendecomposition (O(n^4) worst case per generation). 
 
 - Hansen, N. (2016). [The CMA Evolution Strategy: A Tutorial](https://arxiv.org/abs/1604.00772). arXiv:1604.00772.
 - Hansen, N. & Ostermeier, A. (2001). Completely Derandomized Self-Adaptation in Evolution Strategies. *Evolutionary Computation*, 9(2), 159-195.
+
+## Development
+
+Version `0.2.2` supports `moonc v0.10.20` / `moon 0.1.20261104`.
+Module manifests use `moon.mod`, and examples resolve this checkout through
+`moon.work`. The optimizer imports `moonbitlang/core/cmp` explicitly.
+
+```sh
+just check
+just test
+just target=native check
+just target=native test
+just publish-check
+```
+
+The native tests and examples link Apple's Accelerate framework on macOS.
+The C bridge also supports LAPACK on other platforms; consumers must configure
+their platform's LAPACK/BLAS linker flags.
 
 ## License
 

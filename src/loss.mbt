@@ -1,5 +1,6 @@
 // Generic loss computation using Metrics (Map[String, Double])
 
+///|
 /// Squared relative error
 pub fn sq_err(actual : Double, target : Double) -> Double {
   if target.abs() < 0.001 {
@@ -9,8 +10,12 @@ pub fn sq_err(actual : Double, target : Double) -> Double {
   err * err
 }
 
+///|
 /// Compute loss from metrics against targets
-pub fn compute_loss(metrics : Metrics, targets : Array[BalanceTarget]) -> Double {
+pub fn compute_loss(
+  metrics : Metrics,
+  targets : Array[BalanceTarget],
+) -> Double {
   let mut loss = 0.0
   for t in targets {
     let actual = metrics.get(t.metric)
@@ -19,12 +24,13 @@ pub fn compute_loss(metrics : Metrics, targets : Array[BalanceTarget]) -> Double
   loss
 }
 
+///|
 /// Run multiple seeds, compute averaged loss and metrics
 pub fn compute_loss_averaged(
-  sim : (Array[Double], Int) -> Metrics,
+  sim : (Array[Double], Int32) -> Metrics,
   params : Array[Double],
   targets : Array[BalanceTarget],
-  seeds : Array[Int],
+  seeds : Array[Int32],
 ) -> (Double, Metrics) {
   let all_metrics : Array[Metrics] = []
   let mut total_loss = 0.0

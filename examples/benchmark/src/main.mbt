@@ -9,7 +9,9 @@
 
 // Sphere: f(x) = sum(x_i^2), optimum at origin
 // Tests: basic convergence, step-size adaptation
-fn sphere(params : Array[Double], _seed : Int) -> @dec.Metrics {
+
+///|
+fn sphere(params : Array[Double], _seed : Int32) -> @dec.Metrics {
   let mut sum = 0.0
   for x in params {
     sum = sum + x * x
@@ -22,12 +24,16 @@ fn sphere(params : Array[Double], _seed : Int) -> @dec.Metrics {
 // Rosenbrock: f(x) = sum(100*(x_{i+1} - x_i^2)^2 + (1-x_i)^2)
 // Optimum at (1,1,...,1)
 // Tests: narrow curved valley, non-separable, ill-conditioned
-fn rosenbrock(params : Array[Double], _seed : Int) -> @dec.Metrics {
+
+///|
+fn rosenbrock(params : Array[Double], _seed : Int32) -> @dec.Metrics {
   let mut sum = 0.0
   for i = 0; i < params.length() - 1; i = i + 1 {
     let xi = params[i]
     let xi1 = params[i + 1]
-    sum = sum + 100.0 * (xi1 - xi * xi) * (xi1 - xi * xi) + (1.0 - xi) * (1.0 - xi)
+    sum = sum +
+      100.0 * (xi1 - xi * xi) * (xi1 - xi * xi) +
+      (1.0 - xi) * (1.0 - xi)
   }
   let m = @dec.Metrics::new()
   m.set("value", sum)
@@ -37,7 +43,9 @@ fn rosenbrock(params : Array[Double], _seed : Int) -> @dec.Metrics {
 // Rastrigin: f(x) = 10n + sum(x_i^2 - 10*cos(2*pi*x_i))
 // Optimum at origin, ~10^n local minima
 // Tests: multimodality (hardest for CMA-ES without restarts)
-fn rastrigin(params : Array[Double], _seed : Int) -> @dec.Metrics {
+
+///|
+fn rastrigin(params : Array[Double], _seed : Int32) -> @dec.Metrics {
   let n = params.length()
   let pi = 3.14159265358979323846
   let mut sum = 10.0 * n.to_double()
@@ -52,7 +60,9 @@ fn rastrigin(params : Array[Double], _seed : Int) -> @dec.Metrics {
 // Ackley: 20 + e - 20*exp(-0.2*sqrt(1/n * sum(x_i^2))) - exp(1/n * sum(cos(2*pi*x_i)))
 // Optimum at origin
 // Tests: nearly flat outer region with narrow deep basin
-fn ackley(params : Array[Double], _seed : Int) -> @dec.Metrics {
+
+///|
+fn ackley(params : Array[Double], _seed : Int32) -> @dec.Metrics {
   let n = params.length().to_double()
   let pi = 3.14159265358979323846
   let mut sum_sq = 0.0
@@ -61,9 +71,10 @@ fn ackley(params : Array[Double], _seed : Int) -> @dec.Metrics {
     sum_sq = sum_sq + x * x
     sum_cos = sum_cos + @math.cos(2.0 * pi * x)
   }
-  let val = 20.0 + @math.exp(1.0) - 20.0 * @math.exp(
-      -0.2 * (sum_sq / n).sqrt(),
-    ) - @math.exp(sum_cos / n)
+  let val = 20.0 +
+    @math.exp(1.0) -
+    20.0 * @math.exp(-0.2 * (sum_sq / n).sqrt()) -
+    @math.exp(sum_cos / n)
   let m = @dec.Metrics::new()
   m.set("value", val)
   m
@@ -72,7 +83,9 @@ fn ackley(params : Array[Double], _seed : Int) -> @dec.Metrics {
 // Schwefel: f(x) = 418.9829*n - sum(x_i * sin(sqrt(|x_i|)))
 // Optimum at (420.9687,...,420.9687) ≈ 0
 // Tests: deceptive, global optimum far from center
-fn schwefel(params : Array[Double], _seed : Int) -> @dec.Metrics {
+
+///|
+fn schwefel(params : Array[Double], _seed : Int32) -> @dec.Metrics {
   let n = params.length().to_double()
   let mut sum = 0.0
   for x in params {
@@ -87,7 +100,9 @@ fn schwefel(params : Array[Double], _seed : Int) -> @dec.Metrics {
 // Griewank: f(x) = 1 + (1/4000)*sum(x_i^2) - prod(cos(x_i/sqrt(i+1)))
 // Optimum at origin
 // Tests: non-separable interactions, many local minima
-fn griewank(params : Array[Double], _seed : Int) -> @dec.Metrics {
+
+///|
+fn griewank(params : Array[Double], _seed : Int32) -> @dec.Metrics {
   let mut sum = 0.0
   let mut prod = 1.0
   for i, x in params {
@@ -104,15 +119,16 @@ fn griewank(params : Array[Double], _seed : Int) -> @dec.Metrics {
 // Run all benchmarks
 // ============================================================
 
+///|
 fn run_benchmark(
   name : String,
-  sim : (Array[Double], Int) -> @dec.Metrics,
+  sim : (Array[Double], Int32) -> @dec.Metrics,
   specs : Array[@dec.ParamSpec],
-  max_generations : Int,
+  max_generations : Int32,
   known_optimum : Array[Double],
 ) -> Unit {
   let targets : Array[@dec.BalanceTarget] = [
-    { metric: "value", target: 0.0, weight: 1.0 },
+    { metric: "value", target: 0.0, weight: 1.0, },
   ]
   let config = {
     ..@dec.TuneConfig::default(specs, targets),
@@ -138,10 +154,16 @@ fn run_benchmark(
     "FAIL"
   }
   println(
-    "[" + status + "] " + pad(name, 14) +
-    "loss=" + fmt_sci(result.loss) +
-    "  dist=" + fmt_sci(dist) +
-    "  gens=" + result.generation.to_string(),
+    "[" +
+    status +
+    "] " +
+    pad(name, 14) +
+    "loss=" +
+    fmt_sci(result.loss) +
+    "  dist=" +
+    fmt_sci(dist) +
+    "  gens=" +
+    result.generation.to_string(),
   )
   // Print found params vs optimal (first 5 dims max)
   let show_n = @cmp.minimum(5, result.params.length())
@@ -164,24 +186,30 @@ fn run_benchmark(
   println("")
 }
 
+///|
 fn make_specs(
-  n : Int,
+  n : Int32,
   initial : Double,
   min : Double,
   max : Double,
 ) -> Array[@dec.ParamSpec] {
   let specs : Array[@dec.ParamSpec] = []
   for i = 0; i < n; i = i + 1 {
-    specs.push({ name: "x" + i.to_string(), initial, min, max })
+    specs.push({ name: "x" + i.to_string(), initial, min, max, })
   }
   specs
 }
 
+///|
 fn main {
-  println("╔══════════════════════════════════════════════════════════╗")
+  println(
+    "╔══════════════════════════════════════════════════════════╗",
+  )
   println("║  CMA-ES Benchmark Suite                                 ║")
   println("║  Reference: Hansen (2016) arXiv:1604.00772              ║")
-  println("╚══════════════════════════════════════════════════════════╝")
+  println(
+    "╚══════════════════════════════════════════════════════════╝",
+  )
   println("")
   println("Criteria: PASS (<1e-6) | GOOD (<0.01) | FAIR (<1.0) | FAIL")
   println("")
@@ -193,17 +221,27 @@ fn main {
   println("  f(x) = sum(x_i^2), optimum at origin")
   let opt_sphere = Array::make(n, 0.0)
   run_benchmark(
-    "Sphere", sphere, make_specs(n, 3.0, -5.12, 5.12), 100, opt_sphere,
+    "Sphere",
+    sphere,
+    make_specs(n, 3.0, -5.12, 5.12),
+    100,
+    opt_sphere,
   )
 
   // --- Rosenbrock (n=5) ---
   // Medium: narrow curved valley, non-separable.
   let n_r = 5
   println("--- Rosenbrock (n=" + n_r.to_string() + ") ---")
-  println("  f(x) = sum(100*(x_{i+1}-x_i^2)^2 + (1-x_i)^2), optimum at (1,...,1)")
+  println(
+    "  f(x) = sum(100*(x_{i+1}-x_i^2)^2 + (1-x_i)^2), optimum at (1,...,1)",
+  )
   let opt_rosen = Array::make(n_r, 1.0)
   run_benchmark(
-    "Rosenbrock", rosenbrock, make_specs(n_r, 0.0, -5.0, 10.0), 200, opt_rosen,
+    "Rosenbrock",
+    rosenbrock,
+    make_specs(n_r, 0.0, -5.0, 10.0),
+    200,
+    opt_rosen,
   )
 
   // --- Rosenbrock (n=10) ---
@@ -212,7 +250,11 @@ fn main {
   println("--- Rosenbrock (n=" + n_r2.to_string() + ") ---")
   let opt_rosen2 = Array::make(n_r2, 1.0)
   run_benchmark(
-    "Rosenbrock", rosenbrock, make_specs(n_r2, 0.0, -5.0, 10.0), 1000, opt_rosen2,
+    "Rosenbrock",
+    rosenbrock,
+    make_specs(n_r2, 0.0, -5.0, 10.0),
+    1000,
+    opt_rosen2,
   )
 
   // --- Rastrigin (n=5) ---
@@ -223,7 +265,11 @@ fn main {
   println("  f(x) = 10n + sum(x_i^2 - 10*cos(2*pi*x_i)), optimum at origin")
   let opt_rast = Array::make(n_ra, 0.0)
   run_benchmark(
-    "Rastrigin", rastrigin, make_specs(n_ra, 2.0, -5.12, 5.12), 300, opt_rast,
+    "Rastrigin",
+    rastrigin,
+    make_specs(n_ra, 2.0, -5.12, 5.12),
+    300,
+    opt_rast,
   )
 
   // --- Ackley (n=10) ---
@@ -233,7 +279,11 @@ fn main {
   println("  Nearly flat outer region, narrow optimal basin at origin")
   let opt_ackley = Array::make(n_a, 0.0)
   run_benchmark(
-    "Ackley", ackley, make_specs(n_a, 5.0, -32.768, 32.768), 500, opt_ackley,
+    "Ackley",
+    ackley,
+    make_specs(n_a, 5.0, -32.768, 32.768),
+    500,
+    opt_ackley,
   )
 
   // --- Schwefel (n=5) ---
@@ -244,7 +294,11 @@ fn main {
   println("  f(x) = 418.98n - sum(x_i*sin(sqrt(|x_i|))), optimum at ~420.97")
   let opt_schw = Array::make(n_s, 420.9687)
   run_benchmark(
-    "Schwefel", schwefel, make_specs(n_s, 200.0, -500.0, 500.0), 300, opt_schw,
+    "Schwefel",
+    schwefel,
+    make_specs(n_s, 200.0, -500.0, 500.0),
+    300,
+    opt_schw,
   )
 
   // --- Griewank (n=10) ---
@@ -254,11 +308,17 @@ fn main {
   println("  f(x) = 1 + sum(x_i^2)/4000 - prod(cos(x_i/sqrt(i+1)))")
   let opt_gri = Array::make(n_g, 0.0)
   run_benchmark(
-    "Griewank", griewank, make_specs(n_g, 50.0, -600.0, 600.0), 200, opt_gri,
+    "Griewank",
+    griewank,
+    make_specs(n_g, 50.0, -600.0, 600.0),
+    200,
+    opt_gri,
   )
 
   // Summary
-  println("══════════════════════════════════════════════════════════")
+  println(
+    "══════════════════════════════════════════════════════════",
+  )
   println("Expected results:")
   println("  Sphere:     PASS (convex, separable - trivial for CMA-ES)")
   println("  Rosenbrock: GOOD-PASS (CMA-ES learns valley curvature)")
@@ -266,10 +326,10 @@ fn main {
   println("  Ackley:     GOOD-PASS (CMA-ES handles narrow basins)")
   println("  Schwefel:   FAIR-FAIL (deceptive, optimum far from init)")
   println("  Griewank:   GOOD-PASS (easier in higher dimensions)")
-
 }
 
-fn pad(s : String, width : Int) -> String {
+///|
+fn pad(s : String, width : Int32) -> String {
   let mut r = s
   while r.length() < width {
     r = r + " "
@@ -277,6 +337,7 @@ fn pad(s : String, width : Int) -> String {
   r
 }
 
+///|
 fn fmt4(v : Double) -> String {
   let sign = if v < 0.0 { "-" } else { "" }
   let abs_v = if v < 0.0 { -v } else { v }
@@ -295,6 +356,7 @@ fn fmt4(v : Double) -> String {
   sign + int_part.to_string() + "." + p
 }
 
+///|
 fn fmt_sci(v : Double) -> String {
   if v < 1.0e-10 {
     return "<1e-10  "

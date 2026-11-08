@@ -6,10 +6,14 @@
 extern "C" fn dec_dsyev(
   a : FixedArray[Double],
   w : FixedArray[Double],
-  n : Int,
-) -> Int = "dec_dsyev"
+  n : Int32,
+) -> Int32 = "dec_dsyev"
 
-fn eigen_decompose(mat : Array[Double], n : Int) -> (Array[Double], Array[Double]) {
+///|
+fn eigen_decompose(
+  mat : Array[Double],
+  n : Int32,
+) -> (Array[Double], Array[Double]) {
   // Copy to FixedArray for FFI (column-major for LAPACK)
   let a : FixedArray[Double] = FixedArray::make(n * n, 0.0)
   // Our input is row-major, LAPACK expects column-major

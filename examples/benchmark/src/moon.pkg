@@ -1,14 +1,13 @@
 import {
+  "moonbitlang/core/cmp",
   "mizchi/differentiable_ecs" @dec,
-  "moonbitlang/core/math" @math,
+  "moonbitlang/core/math",
 }
 
+pkgtype(kind: "executable")
+
 options(
-  "is-main": true,
-  link: {
-    "native": {
-      "cc-link-flags": "-framework Accelerate",
-    },
-  },
+  link: { "native": { "cc-link-flags": "-framework Accelerate" } },
 )
+
 warnings = "-1-2-7-20-29-71"

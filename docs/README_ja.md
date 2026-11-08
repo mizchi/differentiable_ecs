@@ -13,7 +13,7 @@ moon add mizchi/differentiable_ecs
 ## クイックスタート
 
 ```moonbit
-fn simulate(params : Array[Double], seed : Int) -> @dec.Metrics {
+fn simulate(params : Array[Double], seed : Int32) -> @dec.Metrics {
   let speed = params[0]
   let hp = params[1]
   // ... シミュレーションを実行 ...
@@ -54,10 +54,10 @@ let specs : Array[@dec.ParamSpec] = [
 
 ### 2. シミュレーション関数を書く
 
-`(Array[Double], Int) -> Metrics` のシグネチャに従い、パラメータ値とシード値を受け取って、計測したいメトリクスを返す。
+`(Array[Double], Int32) -> Metrics` のシグネチャに従い、パラメータ値とシード値を受け取って、計測したいメトリクスを返す。
 
 ```moonbit
-fn simulate(params : Array[Double], seed : Int) -> @dec.Metrics {
+fn simulate(params : Array[Double], seed : Int32) -> @dec.Metrics {
   let player_speed = params[0]
   let enemy_hp = params[1]
   let spawn_rate = params[2]

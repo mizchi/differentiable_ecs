@@ -1,17 +1,19 @@
 // High-level tuner: runs CMA-ES optimization loop
 
+///|
 /// Configuration for a tuning run
 pub(all) struct TuneConfig {
   param_specs : Array[ParamSpec]
   targets : Array[BalanceTarget]
-  seeds : Array[Int]
-  max_generations : Int
+  seeds : Array[Int32]
+  max_generations : Int32
   sigma : Double
-  rng_seed : Int
+  rng_seed : Int32
   /// Log interval: print progress every N generations (0 = no logging)
-  log_interval : Int
+  log_interval : Int32
 }
 
+///|
 pub fn TuneConfig::default(
   param_specs : Array[ParamSpec],
   targets : Array[BalanceTarget],
@@ -27,25 +29,36 @@ pub fn TuneConfig::default(
   }
 }
 
+///|
 /// Run CMA-ES optimization
 pub fn tune(
   config : TuneConfig,
-  sim : (Array[Double], Int) -> Metrics,
+  sim : (Array[Double], Int32) -> Metrics,
 ) -> TuneResult {
   let initial = initial_params(config.param_specs)
   let cma = @optimizer.CmaEs::new(initial, config.sigma, seed=config.rng_seed)
   // Evaluate baseline
-  let (base_loss, _) = compute_loss_averaged(sim, initial, config.targets, config.seeds)
+  let (base_loss, _) = compute_loss_averaged(
+    sim,
+    initial,
+    config.targets,
+    config.seeds,
+  )
   cma.best_loss = base_loss
   for i = 0; i < cma.n; i = i + 1 {
     cma.best_params[i] = initial[i]
   }
   for gen = 0; gen < config.max_generations; gen = gen + 1 {
     let population = cma.sample_population()
-    let fitnesses : Array[(Double, Int)] = []
+    let fitnesses : Array[(Double, Int32)] = []
     for i, candidate in population {
       let clamped = clamp_params(candidate, config.param_specs)
-      let (loss, _) = compute_loss_averaged(sim, clamped, config.targets, config.seeds)
+      let (loss, _) = compute_loss_averaged(
+        sim,
+        clamped,
+        config.targets,
+        config.seeds,
+      )
       fitnesses.push((loss, i))
     }
     fitnesses.sort_by(fn(a, b) { a.0.compare(b.0) })
@@ -63,20 +76,39 @@ pub fn tune(
       }
     }
     if config.log_interval > 0 &&
-       ((gen + 1) % config.log_interval == 0 || gen == 0 || gen == config.max_generations - 1) {
+      (
+        (gen + 1) % config.log_interval == 0 ||
+        gen == 0 ||
+        gen == config.max_generations - 1
+      ) {
       println(
-        "[Gen " + (gen + 1).to_string() + "/" + config.max_generations.to_string() +
-        "] best=" + fmt_f(cma.best_loss) + " sigma=" + fmt_f(cma.sigma),
+        "[Gen " +
+        (gen + 1).to_string() +
+        "/" +
+        config.max_generations.to_string() +
+        "] best=" +
+        fmt_f(cma.best_loss) +
+        " sigma=" +
+        fmt_f(cma.sigma),
       )
     }
   }
   let best = clamp_params(cma.best_result(), config.param_specs)
   let (final_loss, final_metrics) = compute_loss_averaged(
-    sim, best, config.targets, config.seeds,
+    sim,
+    best,
+    config.targets,
+    config.seeds,
   )
-  { params: best, loss: final_loss, generation: cma.generation, metrics: final_metrics }
+  {
+    params: best,
+    loss: final_loss,
+    generation: cma.generation,
+    metrics: final_metrics,
+  }
 }
 
+///|
 fn fmt_f(v : Double) -> String {
   let sign = if v < 0.0 { "-" } else { "" }
   let abs_v = if v < 0.0 { -v } else { v }

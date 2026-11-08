@@ -8,7 +8,8 @@
 //
 // See: github.com/mizchi/kagura/examples/hacknslash_3d/src/balance/
 
-fn simulate_hacknslash(params : Array[Double], seed : Int) -> @dec.Metrics {
+///|
+fn simulate_hacknslash(params : Array[Double], seed : Int32) -> @dec.Metrics {
   // Simplified hack-and-slash simulation
   let player_speed = params[0]
   let enemy_speed = params[1]
@@ -79,35 +80,45 @@ fn simulate_hacknslash(params : Array[Double], seed : Int) -> @dec.Metrics {
   let m = @dec.Metrics::new()
   m.set("survival_frames", frame.to_double())
   m.set("total_kills", kills.to_double())
-  m.set("avg_hp_ratio", if hp_sample_count > 0 {
-    total_hp_samples / hp_sample_count.to_double()
-  } else {
-    0.0
-  })
-  m.set("kills_per_100f", if frame > 0 {
-    kills.to_double() / frame.to_double() * 100.0
-  } else {
-    0.0
-  })
+  m.set(
+    "avg_hp_ratio",
+    if hp_sample_count > 0 {
+      total_hp_samples / hp_sample_count.to_double()
+    } else {
+      0.0
+    },
+  )
+  m.set(
+    "kills_per_100f",
+    if frame > 0 {
+      kills.to_double() / frame.to_double() * 100.0
+    } else {
+      0.0
+    },
+  )
   m
 }
 
+///|
 fn main {
   println("=== Hack-and-Slash Balance Tuner ===")
   println("")
   let specs : Array[@dec.ParamSpec] = [
-    { name: "player_speed", initial: 2.0, min: 0.5, max: 5.0 },
-    { name: "enemy_speed", initial: 1.0, min: 0.2, max: 3.0 },
-    { name: "enemy_hp", initial: 20.0, min: 5.0, max: 100.0 },
-    { name: "attack_damage", initial: 5.0, min: 1.0, max: 30.0 },
-    { name: "spawn_rate", initial: 30.0, min: 5.0, max: 120.0 },
+    { name: "player_speed", initial: 2.0, min: 0.5, max: 5.0, },
+    { name: "enemy_speed", initial: 1.0, min: 0.2, max: 3.0, },
+    { name: "enemy_hp", initial: 20.0, min: 5.0, max: 100.0, },
+    { name: "attack_damage", initial: 5.0, min: 1.0, max: 30.0, },
+    { name: "spawn_rate", initial: 30.0, min: 5.0, max: 120.0, },
   ]
   let targets : Array[@dec.BalanceTarget] = [
-    { metric: "survival_frames", target: 3000.0, weight: 1.0 },
-    { metric: "avg_hp_ratio", target: 0.5, weight: 1.5 },
-    { metric: "kills_per_100f", target: 3.0, weight: 1.0 },
+    { metric: "survival_frames", target: 3000.0, weight: 1.0, },
+    { metric: "avg_hp_ratio", target: 0.5, weight: 1.5, },
+    { metric: "kills_per_100f", target: 3.0, weight: 1.0, },
   ]
-  let config = { ..@dec.TuneConfig::default(specs, targets), max_generations: 30 }
+  let config = {
+    ..@dec.TuneConfig::default(specs, targets),
+    max_generations: 30,
+  }
   let result = @dec.tune(config, simulate_hacknslash)
   println("")
   println("=== RESULT ===")
@@ -118,7 +129,5 @@ fn main {
   }
   println("")
   println("Metrics:")
-  result.metrics.each(fn(k, v) {
-    println("  " + k + ": " + v.to_string())
-  })
+  result.metrics.each(fn(k, v) { println("  " + k + ": " + v.to_string()) })
 }

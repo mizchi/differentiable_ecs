@@ -1,5 +1,5 @@
 import {
-  "moonbitlang/core/math" @math,
+  "moonbitlang/core/math",
 }
 
 warnings = "-1-2-7-20-29-71"

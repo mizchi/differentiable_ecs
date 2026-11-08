@@ -1,11 +1,12 @@
 // CMA-ES optimizer with full covariance adaptation
 // Game-agnostic: operates on Array[Double] parameters
 
+///|
 pub(all) struct CmaEs {
-  n : Int
-  pop_size : Int
-  mu : Int
-  mut generation : Int
+  n : Int32
+  pop_size : Int32
+  mu : Int32
+  mut generation : Int32
   mean : Array[Double]
   mut sigma : Double
   scales : Array[Double]
@@ -22,13 +23,14 @@ pub(all) struct CmaEs {
   chi_n : Double
   mut best_loss : Double
   best_params : Array[Double]
-  mut rng_x : Int
+  mut rng_x : Int32
 }
 
+///|
 pub fn CmaEs::new(
   initial : Array[Double],
   sigma : Double,
-  seed~ : Int = 42,
+  seed~ : Int32 = 42,
 ) -> CmaEs {
   let n = initial.length()
   let pop_size = 4 + (3.0 * @math.ln(n.to_double())).to_int()
@@ -50,9 +52,9 @@ pub fn CmaEs::new(
   let mu_eff = 1.0 / sum_w2
   let n_f = n.to_double()
   let c_sigma = (mu_eff + 2.0) / (n_f + mu_eff + 5.0)
-  let d_sigma = 1.0 + 2.0 * @cmp.maximum(
-      0.0, ((mu_eff - 1.0) / (n_f + 1.0)).sqrt() - 1.0,
-    ) + c_sigma
+  let d_sigma = 1.0 +
+    2.0 * @cmp.maximum(0.0, ((mu_eff - 1.0) / (n_f + 1.0)).sqrt() - 1.0) +
+    c_sigma
   let c_c = (4.0 + mu_eff / n_f) / (n_f + 4.0 + 2.0 * mu_eff / n_f)
   let c1 = 2.0 / ((n_f + 1.3) * (n_f + 1.3) + mu_eff)
   let c_mu = @cmp.minimum(
@@ -93,6 +95,7 @@ pub fn CmaEs::new(
   }
 }
 
+///|
 pub fn CmaEs::sample_population(self : CmaEs) -> Array[Array[Double]] {
   let n = self.n
   let (eigvals, eigvecs) = eigen_decompose(self.cov, n)
@@ -118,10 +121,8 @@ pub fn CmaEs::sample_population(self : CmaEs) -> Array[Array[Double]] {
   pop
 }
 
-pub fn CmaEs::update(
-  self : CmaEs,
-  sorted_pop : Array[Array[Double]],
-) -> Unit {
+///|
+pub fn CmaEs::update(self : CmaEs, sorted_pop : Array[Array[Double]]) -> Unit {
   let n = self.n
   let old_mean = self.mean.copy()
   for i = 0; i < n; i = i + 1 {
@@ -142,9 +143,8 @@ pub fn CmaEs::update(
     ps_norm = ps_norm + self.p_sigma[i] * self.p_sigma[i]
   }
   ps_norm = ps_norm.sqrt()
-  self.sigma = self.sigma * @math.exp(
-    (self.c_sigma / self.d_sigma) * (ps_norm / self.chi_n - 1.0),
-  )
+  self.sigma = self.sigma *
+    @math.exp(self.c_sigma / self.d_sigma * (ps_norm / self.chi_n - 1.0))
   self.sigma = @cmp.maximum(0.001, @cmp.minimum(5.0, self.sigma))
   let gen2 = 2 * (self.generation + 1)
   let decay = 1.0 - pow_d(1.0 - self.c_sigma, gen2)
@@ -164,8 +164,10 @@ pub fn CmaEs::update(
       let r1 = self.c1 * self.p_c[r] * self.p_c[c]
       let mut rm = 0.0
       for j = 0; j < self.mu; j = j + 1 {
-        let yr = (sorted_pop[j][r] - old_mean[r]) / (self.sigma * self.scales[r])
-        let yc = (sorted_pop[j][c] - old_mean[c]) / (self.sigma * self.scales[c])
+        let yr = (sorted_pop[j][r] - old_mean[r]) /
+          (self.sigma * self.scales[r])
+        let yc = (sorted_pop[j][c] - old_mean[c]) /
+          (self.sigma * self.scales[c])
         rm = rm + self.weights[j] * yr * yc
       }
       let new_val = keep * self.cov[r * n + c] + r1 + self.c_mu * rm
@@ -176,6 +178,7 @@ pub fn CmaEs::update(
   self.generation = self.generation + 1
 }
 
+///|
 pub fn CmaEs::best_result(self : CmaEs) -> Array[Double] {
   self.best_params.copy()
 }

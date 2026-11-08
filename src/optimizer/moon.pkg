@@ -1,14 +1,16 @@
 import {
-  "moonbitlang/core/math" @math,
-  "mizchi/differentiable_ecs/linalg" @linalg,
+  "moonbitlang/core/cmp",
+  "moonbitlang/core/math",
+  "mizchi/differentiable_ecs/linalg",
 }
 
 options(
-  "native-stub": ["lapack_stub.c"],
+  "native-stub": [ "lapack_stub.c" ],
   targets: {
-    "eigen_bridge_js.mbt": ["js", "wasm", "wasm-gc"],
-    "eigen_bridge_native.mbt": ["native"],
-    "lapack_stub.c": ["native"],
+    "eigen_bridge_js.mbt": [ "js", "wasm", "wasm-gc" ],
+    "eigen_bridge_native.mbt": [ "native" ],
+    "lapack_stub.c": [ "native" ],
   },
 )
+
 warnings = "-1-2-7-20-29-71"

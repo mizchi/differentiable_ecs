@@ -1,7 +1,8 @@
 // Tower Defense: balance enemy waves, tower damage, spawn rate
 // Goal: survive 10 waves, close final wave, avg clear time ~500 frames
 
-fn simulate_td(params : Array[Double], seed : Int) -> @dec.Metrics {
+///|
+fn simulate_td(params : Array[Double], seed : Int32) -> @dec.Metrics {
   let enemy_base_hp = params[0]
   let hp_scaling = params[1] // per-wave HP multiplier
   let spawn_interval = params[2] // frames between spawns
@@ -27,10 +28,14 @@ fn simulate_td(params : Array[Double], seed : Int) -> @dec.Metrics {
     let mut wave_kills = 0
     while spawned < n_enemies || alive_enemies.length() > 0 {
       frame = frame + 1
-      if frame > 3000 { break } // timeout
+      if frame > 3000 {
+        break
+      } // timeout
       // Spawn
-      if spawned < n_enemies && frame % @cmp.maximum(spawn_interval.to_int(), 1) == 0 {
-        let dist = 200.0 + ((rng_base + wave * 17 + spawned * 7) % 50).to_double()
+      if spawned < n_enemies &&
+        frame % @cmp.maximum(spawn_interval.to_int(), 1) == 0 {
+        let dist = 200.0 +
+          ((rng_base + wave * 17 + spawned * 7) % 50).to_double()
         alive_enemies.push((wave_hp, dist))
         spawned = spawned + 1
       }
@@ -100,36 +105,43 @@ fn simulate_td(params : Array[Double], seed : Int) -> @dec.Metrics {
   }
   let m = @dec.Metrics::new()
   m.set("waves_cleared", waves_cleared.to_double())
-  m.set("avg_clear_time", if waves_cleared > 0 {
-    total_clear_time.to_double() / waves_cleared.to_double()
-  } else {
-    3000.0
-  })
+  m.set(
+    "avg_clear_time",
+    if waves_cleared > 0 {
+      total_clear_time.to_double() / waves_cleared.to_double()
+    } else {
+      3000.0
+    },
+  )
   m.set("base_hp_ratio", current_base_hp / base_hp)
   m.set("closest_call", closest_call)
   m.set("total_kills", total_kills.to_double())
   m
 }
 
+///|
 fn main {
   println("=== Tower Defense Balance Tuner ===")
   println("")
   let specs : Array[@dec.ParamSpec] = [
-    { name: "enemy_base_hp", initial: 30.0, min: 5.0, max: 200.0 },
-    { name: "hp_scaling", initial: 0.3, min: 0.05, max: 2.0 },
-    { name: "spawn_interval", initial: 20.0, min: 5.0, max: 60.0 },
-    { name: "enemies_per_wave", initial: 8.0, min: 3.0, max: 30.0 },
-    { name: "tower_damage", initial: 10.0, min: 1.0, max: 50.0 },
-    { name: "tower_range", initial: 150.0, min: 50.0, max: 300.0 },
-    { name: "tower_fire_rate", initial: 10.0, min: 2.0, max: 30.0 },
+    { name: "enemy_base_hp", initial: 30.0, min: 5.0, max: 200.0, },
+    { name: "hp_scaling", initial: 0.3, min: 0.05, max: 2.0, },
+    { name: "spawn_interval", initial: 20.0, min: 5.0, max: 60.0, },
+    { name: "enemies_per_wave", initial: 8.0, min: 3.0, max: 30.0, },
+    { name: "tower_damage", initial: 10.0, min: 1.0, max: 50.0, },
+    { name: "tower_range", initial: 150.0, min: 50.0, max: 300.0, },
+    { name: "tower_fire_rate", initial: 10.0, min: 2.0, max: 30.0, },
   ]
   let targets : Array[@dec.BalanceTarget] = [
-    { metric: "waves_cleared", target: 10.0, weight: 2.0 }, // survive all waves
-    { metric: "closest_call", target: 0.2, weight: 1.5 }, // exciting close calls
-    { metric: "avg_clear_time", target: 500.0, weight: 1.0 },
-    { metric: "base_hp_ratio", target: 0.3, weight: 1.0 }, // barely survive
+    { metric: "waves_cleared", target: 10.0, weight: 2.0, }, // survive all waves
+    { metric: "closest_call", target: 0.2, weight: 1.5, }, // exciting close calls
+    { metric: "avg_clear_time", target: 500.0, weight: 1.0, },
+    { metric: "base_hp_ratio", target: 0.3, weight: 1.0, }, // barely survive
   ]
-  let config = { ..@dec.TuneConfig::default(specs, targets), max_generations: 30 }
+  let config = {
+    ..@dec.TuneConfig::default(specs, targets),
+    max_generations: 30,
+  }
   let result = @dec.tune(config, simulate_td)
   println("")
   println("=== RESULT ===")
@@ -140,7 +152,5 @@ fn main {
   }
   println("")
   println("Metrics:")
-  result.metrics.each(fn(k, v) {
-    println("  " + k + ": " + v.to_string())
-  })
+  result.metrics.each(fn(k, v) { println("  " + k + ": " + v.to_string()) })
 }

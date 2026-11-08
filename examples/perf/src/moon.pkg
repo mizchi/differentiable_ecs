@@ -1,19 +1,14 @@
 import {
   "mizchi/differentiable_ecs" @dec,
-  "moonbitlang/core/math" @math,
+  "moonbitlang/core/math",
 }
 
+pkgtype(kind: "executable")
+
 options(
-  "is-main": true,
-  "native-stub": ["clock_stub.c"],
-  link: {
-    "native": {
-      "cc-link-flags": "-framework Accelerate",
-    },
-  },
-  targets: {
-    "clock_js.mbt": ["js"],
-    "clock_native.mbt": ["native"],
-  },
+  "native-stub": [ "clock_stub.c" ],
+  link: { "native": { "cc-link-flags": "-framework Accelerate" } },
+  targets: { "clock_js.mbt": [ "js" ], "clock_native.mbt": [ "native" ] },
 )
+
 warnings = "-1-2-7-20-29-71"

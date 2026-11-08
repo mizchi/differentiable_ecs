@@ -1,8 +1,10 @@
 // Core types for game-agnostic balance optimization
 
+///|
 /// Simulation result: flexible key-value metrics
 pub struct Metrics(Map[String, Double])
 
+///|
 /// Get a metric value, defaulting to 0.0 if not found
 pub fn Metrics::get(self : Metrics, key : String) -> Double {
   match self.0.get(key) {
@@ -11,21 +13,25 @@ pub fn Metrics::get(self : Metrics, key : String) -> Double {
   }
 }
 
+///|
 /// Set a metric value
 pub fn Metrics::set(self : Metrics, key : String, value : Double) -> Unit {
   self.0.set(key, value)
 }
 
+///|
 /// Create empty metrics
 pub fn Metrics::new() -> Metrics {
   Metrics(Map::new())
 }
 
+///|
 /// Iterate over all metric entries
 pub fn Metrics::each(self : Metrics, f : (String, Double) -> Unit) -> Unit {
   self.0.each(f)
 }
 
+///|
 /// Average multiple metrics maps (per-key averaging)
 pub fn average_metrics(all : Array[Metrics]) -> Metrics {
   if all.length() == 0 {
@@ -52,6 +58,7 @@ pub fn average_metrics(all : Array[Metrics]) -> Metrics {
   Metrics(result)
 }
 
+///|
 /// A single optimization target: metric name, target value, weight
 pub(all) struct BalanceTarget {
   metric : String
@@ -59,6 +66,7 @@ pub(all) struct BalanceTarget {
   weight : Double
 }
 
+///|
 /// Parameter specification: name, initial value, min, max
 pub(all) struct ParamSpec {
   name : String
@@ -67,6 +75,7 @@ pub(all) struct ParamSpec {
   max : Double
 }
 
+///|
 /// Clamp params array according to specs
 pub fn clamp_params(
   params : Array[Double],
@@ -84,20 +93,23 @@ pub fn clamp_params(
   result
 }
 
+///|
 /// Extract initial values from param specs
 pub fn initial_params(specs : Array[ParamSpec]) -> Array[Double] {
   specs.map(fn(s) { s.initial })
 }
 
+///|
 /// Extract param names from specs
 pub fn param_names(specs : Array[ParamSpec]) -> Array[String] {
   specs.map(fn(s) { s.name })
 }
 
+///|
 /// Result of a tuning run
 pub(all) struct TuneResult {
   params : Array[Double]
   loss : Double
-  generation : Int
+  generation : Int32
   metrics : Metrics
 }

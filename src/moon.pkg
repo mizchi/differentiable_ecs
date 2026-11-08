@@ -1,6 +1,10 @@
 import {
-  "mizchi/differentiable_ecs/linalg" @linalg,
-  "mizchi/differentiable_ecs/optimizer" @optimizer,
+  "mizchi/differentiable_ecs/linalg",
+  "mizchi/differentiable_ecs/optimizer",
 }
 
 warnings = "-1-2-7-20-29-71"
+
+options(
+  link: { "native": { "cc-link-flags": "-framework Accelerate" } },
+)

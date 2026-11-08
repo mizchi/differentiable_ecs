@@ -2,26 +2,41 @@
 // Simulate auto-play games between decks, target ~50% win rate, ~15 turns
 
 // Card: attack, defense, cost
+
+///|
 struct Card {
   atk : Double
   def : Double
-  cost : Int
+  cost : Int32
 }
 
-fn simulate_deckbuilder(params : Array[Double], seed : Int) -> @dec.Metrics {
+///|
+fn simulate_deckbuilder(params : Array[Double], seed : Int32) -> @dec.Metrics {
   // params encode 3 card archetypes x 3 stats (atk, def, cost)
   let cards : Array[Card] = [
     // Aggro: high atk, low def
-    { atk: params[0], def: params[1], cost: @cmp.maximum(params[2].to_int(), 1) },
+    {
+      atk: params[0],
+      def: params[1],
+      cost: @cmp.maximum(params[2].to_int(), 1),
+    },
     // Control: low atk, high def
-    { atk: params[3], def: params[4], cost: @cmp.maximum(params[5].to_int(), 1) },
+    {
+      atk: params[3],
+      def: params[4],
+      cost: @cmp.maximum(params[5].to_int(), 1),
+    },
     // Balanced
-    { atk: params[6], def: params[7], cost: @cmp.maximum(params[8].to_int(), 1) },
+    {
+      atk: params[6],
+      def: params[7],
+      cost: @cmp.maximum(params[8].to_int(), 1),
+    },
   ]
   let n_games = 6 // 3 matchups x 2 sides
   let mut total_turns = 0
-  let wins : Array[Int] = [0, 0, 0] // per archetype
-  let games_played : Array[Int] = [0, 0, 0]
+  let wins : Array[Int32] = [0, 0, 0] // per archetype
+  let games_played : Array[Int32] = [0, 0, 0]
   let mut rng = (seed * 31 + 17).land(0x7FFFFFFF)
   for i = 0; i < 3; i = i + 1 {
     for j = i + 1; j < 3; j = j + 1 {
@@ -43,7 +58,10 @@ fn simulate_deckbuilder(params : Array[Double], seed : Int) -> @dec.Metrics {
           mana1 = mana1 - plays1 * c1.cost
           rng = (rng * 1103515245 + 12345).land(0x7FFFFFFF)
           let roll1 = rng.to_double() / 2147483647.0
-          let dmg1 = @cmp.maximum(plays1.to_double() * c1.atk * (0.8 + roll1 * 0.4) - c1.def * 0.3, 0.0)
+          let dmg1 = @cmp.maximum(
+            plays1.to_double() * c1.atk * (0.8 + roll1 * 0.4) - c1.def * 0.3,
+            0.0,
+          )
           hp2 = hp2 - dmg1
           // Player 2 plays cards
           let c2 = cards[p2_card]
@@ -51,7 +69,10 @@ fn simulate_deckbuilder(params : Array[Double], seed : Int) -> @dec.Metrics {
           mana2 = mana2 - plays2 * c2.cost
           rng = (rng * 1103515245 + 12345).land(0x7FFFFFFF)
           let roll2 = rng.to_double() / 2147483647.0
-          let dmg2 = @cmp.maximum(plays2.to_double() * c2.atk * (0.8 + roll2 * 0.4) - c2.def * 0.3, 0.0)
+          let dmg2 = @cmp.maximum(
+            plays2.to_double() * c2.atk * (0.8 + roll2 * 0.4) - c2.def * 0.3,
+            0.0,
+          )
           hp1 = hp1 - dmg2
         }
         total_turns = total_turns + turns
@@ -93,32 +114,36 @@ fn simulate_deckbuilder(params : Array[Double], seed : Int) -> @dec.Metrics {
   m
 }
 
+///|
 fn main {
   println("=== Deckbuilder Balance Tuner ===")
   println("3 archetypes: Aggro, Control, Balanced")
   println("")
   let specs : Array[@dec.ParamSpec] = [
     // Aggro
-    { name: "aggro_atk", initial: 5.0, min: 1.0, max: 15.0 },
-    { name: "aggro_def", initial: 1.0, min: 0.0, max: 10.0 },
-    { name: "aggro_cost", initial: 2.0, min: 1.0, max: 5.0 },
+    { name: "aggro_atk", initial: 5.0, min: 1.0, max: 15.0, },
+    { name: "aggro_def", initial: 1.0, min: 0.0, max: 10.0, },
+    { name: "aggro_cost", initial: 2.0, min: 1.0, max: 5.0, },
     // Control
-    { name: "control_atk", initial: 2.0, min: 1.0, max: 10.0 },
-    { name: "control_def", initial: 4.0, min: 0.0, max: 15.0 },
-    { name: "control_cost", initial: 3.0, min: 1.0, max: 5.0 },
+    { name: "control_atk", initial: 2.0, min: 1.0, max: 10.0, },
+    { name: "control_def", initial: 4.0, min: 0.0, max: 15.0, },
+    { name: "control_cost", initial: 3.0, min: 1.0, max: 5.0, },
     // Balanced
-    { name: "balanced_atk", initial: 3.0, min: 1.0, max: 12.0 },
-    { name: "balanced_def", initial: 3.0, min: 0.0, max: 12.0 },
-    { name: "balanced_cost", initial: 2.0, min: 1.0, max: 5.0 },
+    { name: "balanced_atk", initial: 3.0, min: 1.0, max: 12.0, },
+    { name: "balanced_def", initial: 3.0, min: 0.0, max: 12.0, },
+    { name: "balanced_cost", initial: 2.0, min: 1.0, max: 5.0, },
   ]
   let targets : Array[@dec.BalanceTarget] = [
-    { metric: "avg_turns", target: 15.0, weight: 1.0 },
-    { metric: "winrate_0", target: 0.5, weight: 2.0 }, // aggro ~50%
-    { metric: "winrate_1", target: 0.5, weight: 2.0 }, // control ~50%
-    { metric: "winrate_2", target: 0.5, weight: 2.0 }, // balanced ~50%
-    { metric: "winrate_variance", target: 0.0, weight: 3.0 }, // minimize variance
+    { metric: "avg_turns", target: 15.0, weight: 1.0, },
+    { metric: "winrate_0", target: 0.5, weight: 2.0, }, // aggro ~50%
+    { metric: "winrate_1", target: 0.5, weight: 2.0, }, // control ~50%
+    { metric: "winrate_2", target: 0.5, weight: 2.0, }, // balanced ~50%
+    { metric: "winrate_variance", target: 0.0, weight: 3.0, }, // minimize variance
   ]
-  let config = { ..@dec.TuneConfig::default(specs, targets), max_generations: 30 }
+  let config = {
+    ..@dec.TuneConfig::default(specs, targets),
+    max_generations: 30,
+  }
   let result = @dec.tune(config, simulate_deckbuilder)
   println("")
   println("=== RESULT ===")
@@ -129,7 +154,5 @@ fn main {
   }
   println("")
   println("Metrics:")
-  result.metrics.each(fn(k, v) {
-    println("  " + k + ": " + v.to_string())
-  })
+  result.metrics.each(fn(k, v) { println("  " + k + ": " + v.to_string()) })
 }
